@@ -2,6 +2,7 @@ import pygame
 from pygame.sprite import Sprite
 
 class A_Bullet(Sprite):
+    # test coment
     """エイリアン艦隊から発射される弾を管理するクラス"""
 
     def __init__(self, ai_game,alien):
