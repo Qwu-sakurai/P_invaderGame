@@ -1,7 +1,9 @@
 import pygame
 from pygame.sprite import Sprite
 import random
-from speedup import Speedup
+from speedup import SpeedUp
+from barrier import Barrier
+from twin import Twin
 
 class Item(Sprite):
     """アイテムを管理するクラス"""
@@ -13,10 +15,12 @@ class Item(Sprite):
         self.settings = ai_game.settings
 
         # 生成するアイテムの種類を選択
-        speed = Speedup()
-        item_kinds = [speed,'images/twin.png','images/barrier.png']
-        image_name = random.choice(item_kinds)
-        self.image = pygame.image.load(image_name)
+        speed = SpeedUp()
+        barrier = Barrier()
+        twin = Twin()
+        item_kinds = [speed,twin,barrier]
+        self.item_object = random.choice(item_kinds)
+        self.image = pygame.image.load(self.item_object.item_kinds)
         self.rect = self.image.get_rect()
 
         # 生成される位置を設定
@@ -36,16 +40,9 @@ class Item(Sprite):
         self.rect.y = self.y
 
     def draw_item(self):
-        """画面に弾を描画する"""
+        """画面にアイテムを描画する"""
         self.screen.blit(self.image, self.rect)
 
-    def speed_up(self):
-        self.settings.ship_speed += 0.2
-
-    def twin_shot(self,ship):
-        self.settings.bullet_allowed *= 2
-        self.settings.twin_shot = True
-
-    def barrier(self):
-        self.settings.barrier = True
+    def item_do(self,ai_game):
+        self.item_object.item_do(ai_game)
 

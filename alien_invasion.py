@@ -174,10 +174,21 @@ class AlienInvasion:
             self.ship.moving_bottom = False
 
     def _fire_bullet(self):
-        """新しい弾を作成し、bulletsグループに追加する"""
-        if len(self.bullets) < self.settings.bullet_allowed:
-            new_bullet = Bullet(self)
-            self.bullets.add(new_bullet)
+        if self.settings.twin_shot_flag:
+            if len(self.bullets) < self.settings.bullet_allowed*2:
+                new_bullet_l = Bullet(self)
+                new_bullet_r = Bullet(self)
+                new_bullet_l.x -= (self.ship.image.get_width()//2)
+                new_bullet_l.rect.x = new_bullet_l.x
+                new_bullet_r.x += (self.ship.image.get_width()//2)
+                new_bullet_r.rect.x = new_bullet_r.x
+                self.bullets.add(new_bullet_r)
+                self.bullets.add(new_bullet_l)
+        else:
+            """新しい弾を作成し、bulletsグループに追加する"""
+            if len(self.bullets) < self.settings.bullet_allowed:
+                new_bullet = Bullet(self)
+                self.bullets.add(new_bullet)
 
     def _update_bullets(self):
         """弾の位置を更新し、古い弾を廃棄する"""
@@ -221,7 +232,8 @@ class AlienInvasion:
     def _update_item(self):
         """アイテムの位置を更新し、古い弾を廃棄する"""
         # 弾の位置を更新する
-        self.items.update()
+        if self.items:
+            self.items.update()
 
         # 見えなくなったアイテムを廃棄する
         for item in self.items:
@@ -229,9 +241,16 @@ class AlienInvasion:
                 self.bullets.remove(item)
 
         # アイテムと宇宙船の衝突に対応する
-        self._check_bullet_alien_collisions()
+        self._check_item_ship_collisions()
 
+    def _check_item_ship_collisions(self):
+        # この一文でself.itemsとself.shipの衝突を感知するとそれを削除するようになる
+        collisions = pygame.sprite.spritecollide(
+            self.ship, self.items, True)
 
+        if collisions:
+            for item in collisions:
+                item.item_do(self)
 
 
     def _update_aliens(self):
@@ -258,7 +277,7 @@ class AlienInvasion:
 
     def _a_fire_bullet(self,alien):
         """alienの新しい弾を作成し、bulletsグループに追加する"""
-        if len(self.a_bullets) < self.settings.a_bullet_allowed:
+        if len(self.a_bullets) < int(self.settings.a_bullet_allowed):
             new_bullet = A_Bullet(self,alien)
             self.a_bullets.add(new_bullet)
 
@@ -281,7 +300,11 @@ class AlienInvasion:
             self.ship,self.a_bullets, True)
 
         if collisions:
-            self._ship_hit()
+            if not self.settings.barrier_flag:
+                self._ship_hit()
+            else:
+                self.settings.barrier_flag = False
+                self.ship.image = pygame.image.load('images/ship.png')
 
     def _check_aliens_bottom(self):
         """エイリアンが画面の一番下に到達したかを確認する"""
@@ -297,6 +320,7 @@ class AlienInvasion:
         """エイリアンと宇宙船の衝突に対応する"""
         self.ship.hit()
         self._update_screen()
+        self.settings.reset_ship_settings()
 
         if self.stats.ships_left > 0:
             # 残りの宇宙船の数を減らす
@@ -308,6 +332,7 @@ class AlienInvasion:
             self.aliens.empty()
             self.bullets.empty()
             self.a_bullets.empty()
+            self.items.empty()
 
             # 新しい艦隊を生成し、宇宙船を中央に配置する
             self._create_fleet()
@@ -392,16 +417,16 @@ class AlienInvasion:
                 # 宇宙船描画
                 self.ship.blitme()
 
+                # アイテム描画
+                for item in self.items.sprites():
+                    item.draw_item()
+
                 # 弾丸描画
                 for bullet in self.bullets.sprites():
                     bullet.draw_bullet()
 
                 for bullet in self.a_bullets.sprites():
                     bullet.draw_bullet()
-
-                # アイテム描画
-                for item in self.items.sprites():
-                    item.draw_item()
 
                 # エイリアン艦隊描画
                 self.aliens.draw(self.screen)
