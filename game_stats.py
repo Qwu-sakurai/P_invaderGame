@@ -12,6 +12,9 @@ class GameStats:
         # GAMEOVERフラグ
         self.game_over = False
 
+        # Clearフラグ
+        self.stage_clear = False
+
         # ハイスコア
         self.high_score = 0
 

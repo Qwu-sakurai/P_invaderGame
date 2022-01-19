@@ -81,6 +81,17 @@ class AlienInvasion:
         self.title.rect.y -= 200
         self.title.msg_image_rect.y -= 200
 
+        # NextStage表示用ボタン
+        self.nextstage = Button(self, "NextStage", size=(500, 100), color=(0, 0, 255), text_color=(0, 0, 0))
+        self.nextstage.rect.y -= 150
+        self.nextstage.msg_image_rect.y -= 150
+
+        # CLEAR表示用ボタン(押せない)
+        self.clear = Button(self, "CLEAR!", size=(500, 100), color=(0, 0, 255), text_color=(0, 0, 0))
+        self.clear.rect.y += 100
+        self.clear.msg_image_rect.y += 100
+
+
         # scoreboardを作成
         self.score = Scoreboard(self)
 
@@ -114,6 +125,7 @@ class AlienInvasion:
                     mouse_pos = pygame.mouse.get_pos()
                     self._check_play_button(mouse_pos)
                     self._check_exit_button(mouse_pos)
+                    self._check_nextstage_button(mouse_pos)
 
     def _check_exit_button(self,mouse_pos):
         """プレイヤーがexitボタンをクリックしたらゲームを終了する"""
@@ -146,6 +158,13 @@ class AlienInvasion:
 
             # マウスカーソルを非表示にする
             # pygame.mouse.set_visible(False)
+
+    def _check_nextstage_button(self,mouse_pos):
+        """プレイヤーがボタンをクリックしたら次のステージへ進む"""
+        button_clicked = self.exit_button.rect.collidepoint(mouse_pos)
+        if button_clicked and not self.stats.game_active:
+            self.stats.game_active = True
+
 
     def _check_keydown_events(self, event):
         """キーを押すイベントに対応する"""
@@ -218,10 +237,16 @@ class AlienInvasion:
                     item = Item(self, bullet)
                     self.items.add(item)
 
+        # エイリアンが０になったらステージクリアとし、ボタンを押したら再スタートする
         if not self.aliens:
+
+            self.stats.game_active = False
+            self.stats.stage_clear = True
+
             # 存在する弾を破壊し、新しい艦隊を作成する
             self.bullets.empty()
             self.a_bullets.empty()
+            self.items.empty()
             self._create_fleet()
             self.settings.increase_speed()
 
@@ -436,14 +461,18 @@ class AlienInvasion:
 
             # ゲームが非アクティブ状態の時に「Play」「Exit」ボタンを描画する
             else:
-                self.play_button.draw_button()
-                self.exit_button.draw_button()
-
-                if self.stats.game_over:
-                    self.gameover.draw_button()
-                    self.score.show_score()
+                if self.stats.stage_clear:
+                    self.nextstage.draw_button()
+                    self.clear.draw_button()
                 else:
-                    self.title.draw_button()
+                    self.play_button.draw_button()
+                    self.exit_button.draw_button()
+
+                    if self.stats.game_over:
+                        self.gameover.draw_button()
+                        self.score.show_score()
+                    else:
+                        self.title.draw_button()
 
             # 最新の状態の画面を表示する
             pygame.display.flip()

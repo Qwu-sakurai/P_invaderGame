@@ -47,10 +47,10 @@ class Settings:
         self.initialize_dynamic_settings()
 
         # アイテム関係の設定
-        self.item_drop = 50
+        self.item_drop = 15
         self.twin_shot = False
         self.barrier = False
-        self.item_speed = 0.5
+        self.item_speed = 0.25
 
     def reset_ship_settings(self):
         self.ship_speed = self.m_ship_speed
