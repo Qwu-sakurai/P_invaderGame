@@ -161,9 +161,10 @@ class AlienInvasion:
 
     def _check_nextstage_button(self,mouse_pos):
         """プレイヤーがボタンをクリックしたら次のステージへ進む"""
-        button_clicked = self.exit_button.rect.collidepoint(mouse_pos)
+        button_clicked = self.nextstage.rect.collidepoint(mouse_pos)
         if button_clicked and not self.stats.game_active:
             self.stats.game_active = True
+            self.stats.stage_clear = False
 
 
     def _check_keydown_events(self, event):
